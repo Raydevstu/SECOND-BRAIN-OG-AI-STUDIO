@@ -5,3 +5,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# --- A1: throwaway test databases, server logs, fixtures
+/.test/
+/db/*.db*
+
+# --- A5: ensure local-pin route is never ignored by local-* rules
+!app/local-pin/
+!src/app/local-pin/

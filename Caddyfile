@@ -1,0 +1,35 @@
+# Caddyfile — S7 (A4): local-only reverse proxy for CORTEX / Brain OS.
+#
+# Binds to loopback by default, and ?XTransformPort= can only reach the
+# realtime service (never arbitrary localhost ports like Ollama or DBs).
+#
+# Environment:
+#   CADDY_BIND     default 127.0.0.1
+#   CADDY_PORT     default 81
+#   APP_PORT       default 3000
+#   REALTIME_PORT  default 3003
+
+:{$CADDY_PORT:81} {
+	bind {$CADDY_BIND:127.0.0.1}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	@realtime query XTransformPort={$REALTIME_PORT:3003}
+	handle @realtime {
+		reverse_proxy 127.0.0.1:{$REALTIME_PORT:3003}
+	}
+
+	@otherPort query XTransformPort=*
+	handle @otherPort {
+		respond "Port not allowed" 403
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:{$APP_PORT:3000}
+	}
+}

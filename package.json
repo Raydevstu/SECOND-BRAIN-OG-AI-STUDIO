@@ -7,6 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "node scripts/test-runner.mjs",
+    "test:security": "node scripts/test-runner.mjs --only=security",
+    "redact:ocr": "bun scripts/redact-legacy-ocr.ts",
+    "redact:ocr:apply": "bun scripts/redact-legacy-ocr.ts --apply",
     "clean": "next clean"
   },
   "dependencies": {
@@ -22,6 +27,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",
+    "socket.io": "^4.8.4",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {

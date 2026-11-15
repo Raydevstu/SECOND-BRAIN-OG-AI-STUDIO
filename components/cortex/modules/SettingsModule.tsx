@@ -1,9 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Moon, RotateCcw, Shield, Sliders, Sun } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Lock, Moon, RotateCcw, Shield, Sliders, Sun } from 'lucide-react';
 import { AVAILABLE_MODELS } from '@/lib/seed-data';
 import type { CortexState, RouterSettings } from '@/lib/types';
+
+interface SecurityStatusSnapshot {
+  authMode: 'open' | 'enforced';
+  accountCount: number;
+  scanRootsConfigured: boolean;
+  scanRootsCount: number;
+  queryLoggingEnabled: boolean;
+  cloudOcrDisabled: boolean;
+  recentAuditEvents: Array<{ id: string; eventType: string; entityType: string; createdAt: string }>;
+}
 
 interface SettingsModuleProps {
   state: CortexState;
@@ -13,7 +24,23 @@ interface SettingsModuleProps {
 
 export function SettingsModule({ state, onUpdateSettings, onResetWorkspace }: SettingsModuleProps) {
   const [newRoot, setNewRoot] = useState('');
+  const [secStatus, setSecStatus] = useState<SecurityStatusSnapshot | null>(null);
   const { settings } = state;
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/security-status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: SecurityStatusSnapshot | null) => {
+        if (active && data) setSecStatus(data);
+      })
+      .catch(() => {
+        // Ignore offline/unauthenticated status fetch
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleAddScanRoot = (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,6 +229,55 @@ export function SettingsModule({ state, onUpdateSettings, onResetWorkspace }: Se
               Add Root
             </button>
           </form>
+        </div>
+      </section>
+
+      {/* Runtime Hardening Posture (Phase A) */}
+      <section className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-indigo-500" />
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Phase A Runtime Hardening Posture
+            </h2>
+          </div>
+          <Link
+            href="/local-pin"
+            className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap shrink-0"
+          >
+            Local PIN Unlock
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="text-slate-500">Auth Boundary</div>
+            <div className="mt-1 font-medium text-slate-900 dark:text-slate-100">
+              {secStatus ? `${secStatus.authMode} (${secStatus.accountCount} accounts)` : 'Checking…'}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="text-slate-500">Scan Root Confinement</div>
+            <div className="mt-1 font-medium text-slate-900 dark:text-slate-100">
+              {secStatus
+                ? secStatus.scanRootsConfigured
+                  ? `Active (${secStatus.scanRootsCount} root)`
+                  : 'Disabled (fail-closed)'
+                : 'Checking…'}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="text-slate-500">SQL Query Logging</div>
+            <div className="mt-1 font-medium text-slate-900 dark:text-slate-100">
+              {secStatus ? (secStatus.queryLoggingEnabled ? 'Debug Enabled' : 'Suppressed (S6)') : 'Checking…'}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+            <div className="text-slate-500">Audit Events Logged</div>
+            <div className="mt-1 font-medium text-slate-900 dark:text-slate-100">
+              {secStatus ? `${secStatus.recentAuditEvents.length} recent` : 'Checking…'}
+            </div>
+          </div>
         </div>
       </section>
 

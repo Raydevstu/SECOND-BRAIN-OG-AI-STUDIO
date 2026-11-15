@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Type } from '@google/genai';
+import { checkTrustedRequest } from '@/lib/auth';
 import { getGeminiClient } from '@/lib/gemini';
 import { redactSecretsInText } from '@/lib/privacy-redactor';
 
@@ -12,6 +13,10 @@ interface LibrarianPayload {
 }
 
 export async function POST(req: NextRequest) {
+  const trust = checkTrustedRequest(req);
+  if (!trust.ok) {
+    return NextResponse.json({ error: trust.error }, { status: trust.status });
+  }
   const startedAt = Date.now();
   try {
     const body = (await req.json()) as LibrarianPayload;

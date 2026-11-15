@@ -1,0 +1,72 @@
+name: Brain OS CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'scripts/**'
+      - 'mini-services/**'
+      - 'Caddyfile'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.ts'
+      - 'eslint.config.mjs'
+      - 'tsconfig.json'
+      - '.github/workflows/*.yml'
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_test_verify:
+    name: Build · Lint · Type-check · Security suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run type-check
+
+      - name: Build Next.js Application
+        run: npm run build
+
+      - name: Copy static assets into standalone
+        run: cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+
+      - name: Security suite (throwaway SQLite + realtime)
+        run: npm run test -- --server=standalone --realtime --port=3100
+
+      - name: Collect Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brain-os-test-artifacts
+          path: |
+            .test/
+            logs/
+          if-no-files-found: ignore
+          retention-days: 7
