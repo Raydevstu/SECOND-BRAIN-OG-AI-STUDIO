@@ -1,0 +1,6 @@
+{
+  "name": "CORTEX Harness",
+  "description": "Unified AI Operating System shell combining multi-provider chat, agent runtime, Second Brain vault, LLM Wiki, knowledge graph, and workflow automation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
