@@ -8,6 +8,23 @@ export type ModuleId =
   | 'plugins'
   | 'settings';
 
+export type NavIconName =
+  | 'home'
+  | 'chat'
+  | 'agents'
+  | 'knowledge'
+  | 'projects'
+  | 'workflows'
+  | 'plugins'
+  | 'settings';
+
+export interface NavItem {
+  id: ModuleId;
+  label: string;
+  icon: NavIconName;
+  section: 'primary' | 'bottom';
+}
+
 export type KnowledgeTab = 'brain' | 'wiki' | 'graph' | 'inbox';
 
 export type ChatMode = 'new' | 'project' | 'multi-agent' | 'brain' | 'wiki';

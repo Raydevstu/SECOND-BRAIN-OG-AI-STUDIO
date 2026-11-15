@@ -21,6 +21,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { INITIAL_CORTEX_STATE } from '@/lib/seed-data';
+import { BOTTOM_NAV_ITEMS, PRIMARY_NAV_ITEMS } from '@/mock/nav';
 import type {
   AgentDefinition,
   BrainItem,
@@ -32,6 +33,7 @@ import type {
   InspectorTarget,
   KnowledgeTab,
   ModuleId,
+  NavIconName,
   ProjectSpace,
   RouterSettings,
   RunLogEntry,
@@ -50,20 +52,18 @@ import { PluginsModule } from './modules/PluginsModule';
 import { SettingsModule } from './modules/SettingsModule';
 
 const STORAGE_KEY = 'cortex-harness-state-v1';
+const CONTEXT_PANEL_STORAGE_KEY = 'cortex-context-panel-open';
 
-const RAIL_PRIMARY: Array<{ id: ModuleId; label: string; icon: React.ReactNode }> = [
-  { id: 'home', label: 'Home', icon: <Home className="w-[18px] h-[18px]" /> },
-  { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-[18px] h-[18px]" /> },
-  { id: 'agents', label: 'Agents', icon: <Bot className="w-[18px] h-[18px]" /> },
-  { id: 'knowledge', label: 'Knowledge', icon: <Brain className="w-[18px] h-[18px]" /> },
-  { id: 'projects', label: 'Projects', icon: <FolderKanban className="w-[18px] h-[18px]" /> },
-  { id: 'workflows', label: 'Workflows', icon: <Zap className="w-[18px] h-[18px]" /> },
-];
-
-const RAIL_BOTTOM: Array<{ id: ModuleId; label: string; icon: React.ReactNode }> = [
-  { id: 'plugins', label: 'Plugins', icon: <Puzzle className="w-[18px] h-[18px]" /> },
-  { id: 'settings', label: 'Settings', icon: <Settings className="w-[18px] h-[18px]" /> },
-];
+const NAV_ICONS: Record<NavIconName, React.ReactNode> = {
+  home: <Home className="w-[18px] h-[18px]" />,
+  chat: <MessageSquare className="w-[18px] h-[18px]" />,
+  agents: <Bot className="w-[18px] h-[18px]" />,
+  knowledge: <Brain className="w-[18px] h-[18px]" />,
+  projects: <FolderKanban className="w-[18px] h-[18px]" />,
+  workflows: <Zap className="w-[18px] h-[18px]" />,
+  plugins: <Puzzle className="w-[18px] h-[18px]" />,
+  settings: <Settings className="w-[18px] h-[18px]" />,
+};
 
 export function CortexShell() {
   const [state, setState] = useState<CortexState>(INITIAL_CORTEX_STATE);
@@ -97,6 +97,9 @@ export function CortexShell() {
             setState(parsed);
           }
         }
+        const savedContextOpen = localStorage.getItem(CONTEXT_PANEL_STORAGE_KEY);
+        if (savedContextOpen === 'true') setContextOpen(true);
+        else if (savedContextOpen === 'false') setContextOpen(false);
       } catch {
         // Ignore corrupt localStorage and fall back to seed
       }
@@ -116,6 +119,15 @@ export function CortexShell() {
   }, [state, hydrated]);
 
   useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(CONTEXT_PANEL_STORAGE_KEY, String(contextOpen));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [contextOpen, hydrated]);
+
+  useEffect(() => {
     const root = document.documentElement;
     if (state.settings.theme === 'dark') {
       root.classList.add('dark');
@@ -124,12 +136,28 @@ export function CortexShell() {
     }
   }, [state.settings.theme]);
 
-  // Global Ctrl+K / Cmd+K listener
+  // Global Ctrl+K / Cmd+K and Ctrl+B / Cmd+B listeners
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      const key = e.key.toLowerCase();
+      if ((e.metaKey || e.ctrlKey) && key === 'k') {
         e.preventDefault();
         setPaletteOpen((v) => !v);
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && key === 'b') {
+        const target = e.target as HTMLElement | null;
+        if (
+          target &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        setContextOpen((v) => !v);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -632,7 +660,7 @@ export function CortexShell() {
           className="w-12 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col items-center justify-between py-2.5"
         >
           <div className="flex flex-col items-center gap-1.5">
-            {RAIL_PRIMARY.map((item) => {
+            {PRIMARY_NAV_ITEMS.map((item) => {
               const active = activeModule === item.id;
               return (
                 <button
@@ -647,14 +675,14 @@ export function CortexShell() {
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  {item.icon}
+                  {NAV_ICONS[item.icon]}
                 </button>
               );
             })}
           </div>
 
           <div className="flex flex-col items-center gap-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
-            {RAIL_BOTTOM.map((item) => {
+            {BOTTOM_NAV_ITEMS.map((item) => {
               const active = activeModule === item.id;
               return (
                 <button
@@ -669,7 +697,7 @@ export function CortexShell() {
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
-                  {item.icon}
+                  {NAV_ICONS[item.icon]}
                 </button>
               );
             })}
