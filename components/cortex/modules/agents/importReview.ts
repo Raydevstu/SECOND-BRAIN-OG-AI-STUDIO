@@ -66,6 +66,28 @@ const SAFE_BASELINE = {
   tools: [] as string[],
 };
 
+const HIGH_RISK_TOOL_TOKENS = new Set<string>([
+  'shell',
+  'exec',
+  'write',
+  'delete',
+  'http',
+  'https',
+  'net',
+  'fetch',
+  'browser',
+]);
+
+function isHighRiskTool(toolName: string): boolean {
+  const normalized = toolName.trim().toLowerCase();
+  // Prototype policy choice: 'memory.write' only writes to the Brain and is governed by memory permissions.
+  if (normalized === 'memory.write') {
+    return false;
+  }
+  const tokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  return tokens.some((token) => HIGH_RISK_TOOL_TOKENS.has(token));
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -301,10 +323,10 @@ export function parseImport(text: string): ParseImportResult {
       if (parsed.delegation.maxConcurrent !== undefined) {
         if (
           typeof parsed.delegation.maxConcurrent !== 'number' ||
-          !Number.isFinite(parsed.delegation.maxConcurrent) ||
-          parsed.delegation.maxConcurrent < 0
+          !Number.isInteger(parsed.delegation.maxConcurrent) ||
+          parsed.delegation.maxConcurrent <= 0
         ) {
-          errors.push('Field "delegation.maxConcurrent" must be a non-negative number.');
+          errors.push('Field "delegation.maxConcurrent" must be a positive integer.');
         } else {
           maxConcurrent = parsed.delegation.maxConcurrent;
         }
@@ -435,16 +457,20 @@ export function diffPermissions(
   imported: AgentDefinition
 ): PermissionDiffItem[] {
   const diffs: PermissionDiffItem[] = [];
+  const seenFields = new Set<string>();
+  const pushDiff = (item: PermissionDiffItem) => {
+    if (seenFields.has(item.field)) return;
+    seenFields.add(item.field);
+    diffs.push(item);
+  };
 
   const baseFs = existingOrNull ? existingOrNull.permissions.fs : SAFE_BASELINE.permissions.fs;
   if (imported.permissions.fs !== baseFs) {
-    const fsRank = (v: AgentDefinition['permissions']['fs']) =>
-      v === 'none' ? 0 : v === 'read-only' ? 1 : 2;
-    diffs.push({
+    pushDiff({
       field: 'permissions.fs',
       from: baseFs,
       to: imported.permissions.fs,
-      risk: fsRank(imported.permissions.fs) > 2 ? 'high' : imported.permissions.fs === 'project-only' ? 'medium' : 'low',
+      risk: imported.permissions.fs === 'project-only' ? 'high' : 'low',
     });
   }
 
@@ -452,7 +478,7 @@ export function diffPermissions(
     ? existingOrNull.permissions.network
     : SAFE_BASELINE.permissions.network;
   if (imported.permissions.network !== baseNetwork) {
-    diffs.push({
+    pushDiff({
       field: 'permissions.network',
       from: String(baseNetwork),
       to: String(imported.permissions.network),
@@ -464,7 +490,7 @@ export function diffPermissions(
     ? existingOrNull.permissions.shell
     : SAFE_BASELINE.permissions.shell;
   if (imported.permissions.shell !== baseShell) {
-    diffs.push({
+    pushDiff({
       field: 'permissions.shell',
       from: baseShell,
       to: imported.permissions.shell,
@@ -476,7 +502,7 @@ export function diffPermissions(
     ? existingOrNull.delegation.canSpawn
     : SAFE_BASELINE.delegation.canSpawn;
   if (imported.delegation.canSpawn !== baseCanSpawn) {
-    diffs.push({
+    pushDiff({
       field: 'delegation.canSpawn',
       from: String(baseCanSpawn),
       to: String(imported.delegation.canSpawn),
@@ -488,7 +514,7 @@ export function diffPermissions(
     ? existingOrNull.delegation.maxDepth
     : SAFE_BASELINE.delegation.maxDepth;
   if (imported.delegation.maxDepth !== baseMaxDepth) {
-    diffs.push({
+    pushDiff({
       field: 'delegation.maxDepth',
       from: String(baseMaxDepth),
       to: String(imported.delegation.maxDepth),
@@ -496,31 +522,49 @@ export function diffPermissions(
     });
   }
 
+  const baseMaxConcurrent = existingOrNull
+    ? existingOrNull.delegation.maxConcurrent
+    : SAFE_BASELINE.delegation.maxConcurrent;
+  if (
+    imported.delegation.maxConcurrent !== baseMaxConcurrent ||
+    imported.delegation.maxConcurrent > 4
+  ) {
+    pushDiff({
+      field: 'delegation.maxConcurrent',
+      from: String(baseMaxConcurrent),
+      to: String(imported.delegation.maxConcurrent),
+      risk: imported.delegation.maxConcurrent > 4 ? 'medium' : 'low',
+    });
+  }
+
   const baseMcp = existingOrNull ? existingOrNull.mcpServers : SAFE_BASELINE.mcpServers;
-  const extraMcpBeyondBrain = imported.mcpServers.filter((s) => s !== 'cortex-brain');
+  const addedRiskyMcp = imported.mcpServers.filter(
+    (s) => s !== 'cortex-brain' && !baseMcp.includes(s)
+  );
   const mcpChanged =
     imported.mcpServers.length !== baseMcp.length ||
     imported.mcpServers.some((s, i) => s !== baseMcp[i]);
-  if (mcpChanged || extraMcpBeyondBrain.length > 0) {
-    diffs.push({
+  if (mcpChanged) {
+    pushDiff({
       field: 'mcpServers',
       from: baseMcp.join(', ') || '(none)',
       to: imported.mcpServers.join(', ') || '(none)',
-      risk: extraMcpBeyondBrain.length > 0 ? 'high' : 'low',
+      risk: addedRiskyMcp.length > 0 ? 'high' : 'low',
     });
   }
 
   const baseTools = existingOrNull ? existingOrNull.tools : SAFE_BASELINE.tools;
   const newTools = imported.tools.filter((t) => !baseTools.includes(t));
+  const hasHighRiskNewTool = newTools.some((tool) => isHighRiskTool(tool));
   const toolsChanged =
     imported.tools.length !== baseTools.length ||
     imported.tools.some((t, i) => t !== baseTools[i]);
   if (toolsChanged) {
-    diffs.push({
+    pushDiff({
       field: 'tools',
       from: baseTools.join(', ') || '(none)',
       to: imported.tools.join(', ') || '(none)',
-      risk: newTools.length > 0 ? 'medium' : 'low',
+      risk: hasHighRiskNewTool ? 'high' : newTools.length > 0 ? 'medium' : 'low',
     });
   }
 
@@ -528,7 +572,7 @@ export function diffPermissions(
     ? existingOrNull.budget.maxTokensPerRun
     : SAFE_BASELINE.budget.maxTokensPerRun;
   if (imported.budget.maxTokensPerRun !== baseTokens || imported.budget.maxTokensPerRun > 500000) {
-    diffs.push({
+    pushDiff({
       field: 'budget.maxTokensPerRun',
       from: baseTokens.toLocaleString(),
       to: imported.budget.maxTokensPerRun.toLocaleString(),
@@ -540,7 +584,7 @@ export function diffPermissions(
     ? existingOrNull.budget.maxCostUsd
     : SAFE_BASELINE.budget.maxCostUsd;
   if (imported.budget.maxCostUsd !== baseCost || imported.budget.maxCostUsd > 1) {
-    diffs.push({
+    pushDiff({
       field: 'budget.maxCostUsd',
       from: `$${baseCost.toFixed(2)}`,
       to: `$${imported.budget.maxCostUsd.toFixed(2)}`,

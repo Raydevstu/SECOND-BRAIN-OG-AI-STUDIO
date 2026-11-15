@@ -97,10 +97,10 @@ export function ImportReviewPanel({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {diffs.map((item) => {
+                {diffs.map((item, index) => {
                   const badge = RISK_BADGE_STYLES[item.risk];
                   return (
-                    <tr key={item.field}>
+                    <tr key={`${item.field}-${index}`}>
                       <td className="px-3 py-2 font-mono text-slate-800 dark:text-slate-200">
                         {item.field}
                       </td>

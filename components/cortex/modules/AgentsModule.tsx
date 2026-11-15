@@ -85,21 +85,36 @@ export function AgentsModule({
     setModalMode(null);
     setImportStep('edit');
     setPendingReview(null);
+    setImportJson('');
     setImportErrors([]);
+    setHighRiskAck(false);
+  }, []);
+
+  const handleBackToEdit = useCallback(() => {
+    setImportStep('edit');
+    setPendingReview(null);
     setHighRiskAck(false);
   }, []);
 
   useEffect(() => {
     if (!modalMode) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeModal();
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      if (modalMode === 'import' && importStep === 'review') {
+        handleBackToEdit();
+        return;
       }
+      if (modalMode === 'import' && importStep === 'edit' && importJson.trim().length > 0) {
+        if (!window.confirm('Discard pasted Agent JSON?')) {
+          return;
+        }
+      }
+      closeModal();
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [modalMode, closeModal]);
+  }, [modalMode, importStep, importJson, closeModal, handleBackToEdit]);
 
   const selectedAgent = useMemo(
     () => state.agents.find((a) => a.id === selectedAgentId) ?? state.agents[0],
@@ -222,7 +237,7 @@ export function AgentsModule({
     onSaveAgent(newAgent);
     onSelectAgent(newAgent.id);
     onInspect({ kind: 'agent', agentId: newAgent.id });
-    setModalMode(null);
+    closeModal();
     setDraftName('');
     setDraftDesc('');
     setDraftPrompt('');
@@ -267,12 +282,6 @@ export function AgentsModule({
       next.add(pendingReview.agent.id);
       return next;
     });
-    setImportJson('');
-    closeModal();
-  };
-
-  const handleRejectImport = () => {
-    setImportJson('');
     closeModal();
   };
 
@@ -643,12 +652,8 @@ export function AgentsModule({
                 highRiskAcknowledged={highRiskAck}
                 onToggleHighRiskAck={setHighRiskAck}
                 onApprove={handleApproveImport}
-                onBackToEdit={() => {
-                  setImportStep('edit');
-                  setPendingReview(null);
-                  setHighRiskAck(false);
-                }}
-                onReject={handleRejectImport}
+                onBackToEdit={handleBackToEdit}
+                onReject={closeModal}
               />
             ) : (
               <form onSubmit={handleImportSubmit} className="space-y-3">
