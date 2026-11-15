@@ -9,6 +9,7 @@ import { registerStubAgent, resetStubAgents, type StoredRunnableAgent } from '..
 import { checkDelegation, GLOBAL_MAX_DEPTH } from '../lib/runtime/delegation';
 import { startRun, advance } from '../lib/runtime/runtime';
 import { resolvePlan, resolveTool, cancelRun } from '../lib/runtime/resolve';
+import { bindUndoPort, undoRun } from '../lib/runtime/undo';
 import type { Msg } from '../lib/providers/router';
 
 type ScriptedResponse = {
@@ -692,22 +693,24 @@ async function main() {
   const notes = new Map<string, { id: string; title: string; body: string }>([
     ['n1', { id: 'n1', title: 'Architecture', body: 'initial-body' }],
   ]);
-  setKnowledgePort({
-    search: async (q) =>
+  const port = {
+    search: async (q: string) =>
       [...notes.values()]
         .filter((n) => n.title.includes(q) || n.body.includes(q))
         .map((n) => ({ id: n.id, title: n.title, snippet: n.body.slice(0, 100) })),
-    getNote: async (id) => notes.get(id) ?? null,
-    updateNote: async (id, body) => {
+    getNote: async (id: string) => notes.get(id) ?? null,
+    updateNote: async (id: string, body: string) => {
       const n = notes.get(id);
       if (n) n.body = body;
     },
-    createNote: async (title, body) => {
+    createNote: async (title: string, body: string) => {
       const id = `n-${notes.size + 1}`;
       notes.set(id, { id, title, body });
       return { id };
     },
-  });
+  };
+  setKnowledgePort(port);
+  bindUndoPort(port);
 
   await testGateCases();
   await testBudgetLimits();
@@ -718,8 +721,87 @@ async function main() {
   await testResumeAndD12();
   await testCancelMidRunAndLock();
   await testInvalidOutputRepairAndPromptInjection(notes);
+  await testUndoRun(notes);
 
-  console.log('verify-runtime: all Step 5 assertions passed');
+  console.log('verify-runtime: all Step 6 assertions passed');
+}
+
+async function testUndoRun(notes: Map<string, { id: string; title: string; body: string }>) {
+  notes.set('undo-note', { id: 'undo-note', title: 'Undo Test', body: 'v0' });
+
+  // Register a tool with no undo handler to verify D13 skipping
+  if (!registry.get('write.no_undo')) {
+    registry.register({
+      name: 'write.no_undo',
+      description: 'Write tool without undo handler',
+      risk: 'write',
+      input: z.object({ id: z.string() }),
+      run: async () => ({ ok: true }),
+    });
+  }
+
+  registerStubAgent(makeAgent({ id: 'undo-agent' }));
+  const runId = await startRun({ agentId: 'undo-agent', task: 'undo test' });
+
+  // Simulate two sequential updates (v0 -> v1 -> v2) plus two un-undoable checkpoints
+  await db.checkpoint.create({
+    data: {
+      runId,
+      stepIdx: 0,
+      tool: 'brain.update',
+      targetId: 'undo-note',
+      beforeJson: JSON.stringify('v0'),
+    },
+  });
+  await db.checkpoint.create({
+    data: {
+      runId,
+      stepIdx: 1,
+      tool: 'write.no_undo',
+      targetId: 'target-no-undo',
+      beforeJson: JSON.stringify({ x: 1 }),
+    },
+  });
+  await db.checkpoint.create({
+    data: {
+      runId,
+      stepIdx: 2,
+      tool: 'brain.update',
+      targetId: 'undo-note',
+      beforeJson: JSON.stringify('v1'),
+    },
+  });
+  await db.checkpoint.create({
+    data: {
+      runId,
+      stepIdx: 3,
+      tool: 'unknown.tool',
+      targetId: 'target-unknown',
+      beforeJson: JSON.stringify({}),
+    },
+  });
+  notes.get('undo-note')!.body = 'v2';
+
+  const res = await undoRun(runId);
+  // Newest-first rollback: v1 first, then v0 -> final body must be v0
+  assert.equal(notes.get('undo-note')?.body, 'v0');
+  assert.deepEqual(res.restored, ['undo-note', 'undo-note']);
+  assert.equal(res.skipped.length, 2);
+  assert.deepEqual(
+    res.skipped.map((s) => s.tool),
+    ['unknown.tool', 'write.no_undo']
+  );
+
+  // brain.update checkpoints are marked restoredAt; skipped tools stay unrestored
+  const runAfter = await db.agentRun.findUniqueOrThrow({ where: { id: runId }, include: { checkpoints: true } });
+  const restoredCps = (runAfter.checkpoints ?? []).filter((c) => c.tool === 'brain.update');
+  const skippedCps = (runAfter.checkpoints ?? []).filter((c) => c.tool !== 'brain.update');
+  assert.ok(restoredCps.every((c) => c.restoredAt !== null));
+  assert.ok(skippedCps.every((c) => c.restoredAt === null));
+
+  // Idempotent on already-restored checkpoints
+  const second = await undoRun(runId);
+  assert.deepEqual(second.restored, []);
 }
 
 main().catch((err) => {
