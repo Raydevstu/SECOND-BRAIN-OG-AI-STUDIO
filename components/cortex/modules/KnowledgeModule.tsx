@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import {
   BookOpen,
@@ -24,12 +24,12 @@ import type {
   GraphEdge,
   GraphNode,
   GraphNodeType,
-  GraphRelation,
   InspectorTarget,
   KnowledgeTab,
   RunLogEntry,
   WikiPage,
 } from '@/lib/types';
+import { mapLibrarianResultToKnowledge } from './knowledge/ingestMapping';
 
 interface KnowledgeModuleProps {
   state: CortexState;
@@ -58,7 +58,25 @@ const NODE_COLORS: Record<GraphNodeType, string> = {
   Person: '#14b8a6',
 };
 
+const NODE_TYPES = Object.keys(NODE_COLORS) as GraphNodeType[];
 const FOLDERS: BrainFolder[] = ['Memories', 'Ideas', 'Notes', 'Goals', 'Tasks', 'People', 'Bookmarks', 'Journal'];
+const GRAPH_BASE_WIDTH = 760;
+const GRAPH_BASE_HEIGHT = 450;
+
+interface RecentIngestEntry {
+  id: string;
+  title: string;
+  time: string;
+  status: 'filed' | 'failed';
+  brainId?: string;
+}
+
+function matchesBrainFilter(item: BrainItem, search: string, folder: string): boolean {
+  if (folder !== 'ALL' && item.folder !== folder) return false;
+  const q = search.trim().toLowerCase();
+  if (!q) return true;
+  return `${item.title} ${item.content} ${item.tags.join(' ')}`.toLowerCase().includes(q);
+}
 
 export function KnowledgeModule({
   state,
@@ -81,10 +99,22 @@ export function KnowledgeModule({
   const [draftTitle, setDraftTitle] = useState('');
   const [draftContent, setDraftContent] = useState('');
 
+  // Wiki controls
+  const [wikiSearch, setWikiSearch] = useState('');
+
   // Graph controls
   const [graphFilter, setGraphFilter] = useState<string>('ALL');
   const [graphZoom, setGraphZoom] = useState(1);
+  const [graphPan, setGraphPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string>('node-cortex');
+  const svgRef = useRef<SVGSVGElement>(null);
+  const panStartRef = useRef<{
+    clientX: number;
+    clientY: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
 
   // Librarian Inbox state
   const [inboxTitle, setInboxTitle] = useState('');
@@ -93,20 +123,50 @@ export function KnowledgeModule({
   const [ingesting, setIngesting] = useState(false);
   const [ingestSummary, setIngestSummary] = useState<string | null>(null);
   const [ingestError, setIngestError] = useState<string | null>(null);
+  const [recentIngests, setRecentIngests] = useState<RecentIngestEntry[]>([]);
 
-  const filteredBrain = useMemo(() => {
-    const q = brainSearch.trim().toLowerCase();
-    return state.brainItems.filter((item) => {
-      if (folderFilter !== 'ALL' && item.folder !== folderFilter) return false;
-      if (!q) return true;
-      return `${item.title} ${item.content} ${item.tags.join(' ')}`.toLowerCase().includes(q);
-    });
-  }, [state.brainItems, brainSearch, folderFilter]);
+  const filteredBrain = useMemo(
+    () => state.brainItems.filter((item) => matchesBrainFilter(item, brainSearch, folderFilter)),
+    [state.brainItems, brainSearch, folderFilter]
+  );
 
   const activeBrain =
-    state.brainItems.find((b) => b.id === selectedBrainId) ?? filteredBrain[0] ?? state.brainItems[0];
+    filteredBrain.find((b) => b.id === selectedBrainId) ?? filteredBrain[0] ?? null;
 
-  const activeWiki = state.wikiPages.find((w) => w.id === selectedWikiId) ?? state.wikiPages[0];
+  const prevActiveBrainIdRef = useRef<string | null>(activeBrain?.id ?? null);
+  useEffect(() => {
+    const currentId = activeBrain?.id ?? null;
+    if (prevActiveBrainIdRef.current !== currentId) {
+      prevActiveBrainIdRef.current = currentId;
+      if (editingBrain) {
+        const raf = requestAnimationFrame(() => setEditingBrain(false));
+        return () => cancelAnimationFrame(raf);
+      }
+    }
+  }, [activeBrain?.id, editingBrain]);
+
+  const brainById = useMemo(
+    () => new Map(state.brainItems.map((item) => [item.id, item])),
+    [state.brainItems]
+  );
+
+  const filteredWiki = useMemo(() => {
+    const q = wikiSearch.trim().toLowerCase();
+    if (!q) return state.wikiPages;
+    return state.wikiPages.filter((page) =>
+      `${page.title} ${page.category} ${page.summary}`.toLowerCase().includes(q)
+    );
+  }, [state.wikiPages, wikiSearch]);
+
+  const activeWiki =
+    filteredWiki.find((w) => w.id === selectedWikiId) ?? filteredWiki[0] ?? null;
+
+  const nodeById = useMemo(
+    () => new Map(state.graphNodes.map((n) => [n.id, n])),
+    [state.graphNodes]
+  );
+
+  const effectiveActiveNodeId = activeNodeId && nodeById.has(activeNodeId) ? activeNodeId : null;
 
   const privacyPreview = useMemo(() => redactSecretsInText(inboxText), [inboxText]);
 
@@ -133,7 +193,67 @@ export function KnowledgeModule({
     });
   };
 
+  const confirmDiscardBrainEdits = (): boolean => {
+    if (!editingBrain) return true;
+    return window.confirm('Discard unsaved edits to the current note?');
+  };
+
+  const handleTabClick = (nextTab: KnowledgeTab) => {
+    if (nextTab === activeTab) return;
+    if (activeTab === 'brain' && editingBrain) {
+      if (!confirmDiscardBrainEdits()) {
+        return;
+      }
+      setEditingBrain(false);
+    }
+    onTabChange(nextTab);
+  };
+
+  const handleBrainSearchChange = (nextSearch: string) => {
+    if (editingBrain && activeBrain && !matchesBrainFilter(activeBrain, nextSearch, folderFilter)) {
+      if (!confirmDiscardBrainEdits()) {
+        return;
+      }
+      setEditingBrain(false);
+    }
+    setBrainSearch(nextSearch);
+  };
+
+  const handleFolderFilterChange = (nextFolder: string) => {
+    if (editingBrain && activeBrain && !matchesBrainFilter(activeBrain, brainSearch, nextFolder)) {
+      if (!confirmDiscardBrainEdits()) {
+        return;
+      }
+      setEditingBrain(false);
+    }
+    setFolderFilter(nextFolder);
+  };
+
+  const handleSelectBrainNote = (
+    itemId: string,
+    opts?: { ensureVisible?: boolean; switchToBrainTab?: boolean }
+  ) => {
+    if (editingBrain && activeBrain?.id !== itemId) {
+      if (!confirmDiscardBrainEdits()) {
+        return;
+      }
+    }
+    if (opts?.ensureVisible && !filteredBrain.some((b) => b.id === itemId)) {
+      setBrainSearch('');
+      setFolderFilter('ALL');
+    }
+    if (opts?.switchToBrainTab && activeTab !== 'brain') {
+      onTabChange('brain');
+    }
+    onSelectBrain(itemId);
+    onInspect({ kind: 'brain', itemId });
+    setEditingBrain(false);
+  };
+
   const handleCreateQuickNote = () => {
+    if (editingBrain && !window.confirm('Discard unsaved edits to the current note?')) {
+      return;
+    }
     const newNote: BrainItem = {
       id: `brain-${Date.now()}`,
       title: 'Untitled Vault Note',
@@ -188,92 +308,37 @@ export function KnowledgeModule({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Librarian ingestion failed.');
 
-      const result = data.result;
-      const brainId = `brain-${Date.now()}`;
-      const validFolder = FOLDERS.includes(result.folder) ? (result.folder as BrainFolder) : 'Notes';
-
-      const newBrain: BrainItem = {
-        id: brainId,
-        title: result.title,
-        folder: validFolder,
+      const nowMs = Date.now();
+      const mapped = mapLibrarianResultToKnowledge({
+        result: data.result,
+        redactedContent: data.redactedContent,
         projectId: project?.id ?? null,
-        tags: result.tags,
-        content: `${result.summary}\n\n---\n\n${data.redactedContent}`,
-        backlinks: [],
-        updatedAt: new Date().toISOString(),
-        source: 'Librarian Agent',
-      };
-      onAddBrainItem(newBrain);
+        existingGraphNodes: state.graphNodes,
+        timestampMs: nowMs,
+        updatedAtIso: new Date(nowMs).toISOString(),
+      });
 
-      const wikiId = `wiki-${Date.now()}`;
-      const newWiki: WikiPage = {
-        id: wikiId,
-        title: result.wikiTopicTitle,
-        category: result.wikiCategory,
-        projectId: project?.id ?? null,
-        summary: result.summary,
-        content: result.wikiMarkdown,
-        citations: [brainId],
-        updatedAt: new Date().toISOString(),
-        compiledBy: 'Librarian',
-      };
-      onUpsertWikiPage(newWiki);
+      onAddBrainItem(mapped.brainItem);
+      onUpsertWikiPage(mapped.wikiPage);
+      onMergeGraph(mapped.nodes, mapped.edges);
 
-      // Build Graph Nodes & Edges
-      const sourceNodeId = `node-${Date.now()}`;
-      const baseAngle = Math.random() * Math.PI * 2;
-      const sourceNode: GraphNode = {
-        id: sourceNodeId,
-        label: result.title.slice(0, 28),
-        type: 'Document',
-        projectId: project?.id ?? null,
-        summary: result.summary,
-        x: 380 + Math.cos(baseAngle) * 110,
-        y: 210 + Math.sin(baseAngle) * 95,
-      };
-      const newNodes: GraphNode[] = [sourceNode];
-      const newEdges: GraphEdge[] = [
+      setRecentIngests((prev) => [
         {
-          id: `edge-lib-${Date.now()}`,
-          source: 'node-librarian',
-          target: sourceNodeId,
-          relation: 'RELATES_TO',
-          weight: 1,
+          id: `ingest-${nowMs}`,
+          title: mapped.brainItem.title,
+          time: new Date(nowMs).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          status: 'filed',
+          brainId: mapped.brainItem.id,
         },
-      ];
-
-      (result.entities ?? []).forEach(
-        (ent: { label: string; nodeType: string; relation: string; summary: string }, idx: number) => {
-          const existing = state.graphNodes.find(
-            (n) => n.label.toLowerCase() === ent.label.toLowerCase()
-          );
-          const targetId = existing ? existing.id : `node-ent-${Date.now()}-${idx}`;
-          if (!existing) {
-            const angle = baseAngle + (idx + 1) * 1.1;
-            newNodes.push({
-              id: targetId,
-              label: ent.label,
-              type: (ent.nodeType as GraphNodeType) || 'Concept',
-              projectId: project?.id ?? null,
-              summary: ent.summary || ent.label,
-              x: Math.max(80, Math.min(680, sourceNode.x + Math.cos(angle) * 135)),
-              y: Math.max(60, Math.min(390, sourceNode.y + Math.sin(angle) * 105)),
-            });
-          }
-          newEdges.push({
-            id: `edge-ent-${Date.now()}-${idx}`,
-            source: sourceNodeId,
-            target: targetId,
-            relation: (ent.relation as GraphRelation) || 'REFERENCES',
-            weight: 1,
-          });
-        }
-      );
-
-      onMergeGraph(newNodes, newEdges);
+        ...prev,
+      ]);
 
       setIngestSummary(
-        `Filed "${result.title}" into Brain (${validFolder}), compiled Wiki entry "${result.wikiTopicTitle}", added ${newNodes.length} graph node(s), and redacted ${data.redactionCount} secret(s).`
+        `Filed "${mapped.brainItem.title}" into Brain (${mapped.validFolder}), compiled Wiki entry "${mapped.wikiPage.title}", added ${mapped.nodes.length} graph node(s), and redacted ${data.redactionCount} secret(s).`
       );
       setInboxTitle('');
       setInboxText('');
@@ -281,12 +346,26 @@ export function KnowledgeModule({
       onAddLog({
         source: 'Librarian',
         level: 'success',
-        message: `Ingested "${result.title}" -> Brain + Wiki + ${newNodes.length} Graph nodes (${data.latencyMs}ms)`,
+        message: `Ingested "${mapped.brainItem.title}" -> Brain + Wiki + ${mapped.nodes.length} Graph nodes (${data.latencyMs}ms)`,
         detail: `${data.chunksCount} chunk(s) · ${data.redactionCount} redaction(s)`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Librarian failed.';
+      const nowMs = Date.now();
       setIngestError(msg);
+      setRecentIngests((prev) => [
+        {
+          id: `ingest-${nowMs}`,
+          title: inboxTitle.trim() || 'Untitled Capture',
+          time: new Date(nowMs).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          status: 'failed',
+        },
+        ...prev,
+      ]);
       onAddLog({ source: 'Librarian', level: 'error', message: msg });
     } finally {
       setIngesting(false);
@@ -304,7 +383,11 @@ export function KnowledgeModule({
     <div className="flex flex-col h-full">
       {/* Sub-module Tabs */}
       <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 flex flex-wrap items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
+        <div
+          role="tablist"
+          aria-label="Knowledge sections"
+          className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80"
+        >
           {[
             { id: 'brain' as const, label: 'Brain Vault', icon: <Brain className="w-3.5 h-3.5" /> },
             { id: 'wiki' as const, label: 'LLM Wiki', icon: <BookOpen className="w-3.5 h-3.5" /> },
@@ -314,7 +397,9 @@ export function KnowledgeModule({
             <button
               key={t.id}
               type="button"
-              onClick={() => onTabChange(t.id)}
+              role="tab"
+              aria-selected={activeTab === t.id}
+              onClick={() => handleTabClick(t.id)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === t.id
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
@@ -337,14 +422,14 @@ export function KnowledgeModule({
         {activeTab === 'brain' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 h-full min-h-[540px]">
             {/* Left List */}
-            <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900/40">
-              <div className="p-3 border-b border-slate-200 dark:border-slate-800 space-y-2.5">
+            <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900/40 min-h-0">
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800 space-y-2.5 shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                     <input
                       value={brainSearch}
-                      onChange={(e) => setBrainSearch(e.target.value)}
+                      onChange={(e) => handleBrainSearchChange(e.target.value)}
                       placeholder="Filter vault..."
                       className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950"
                     />
@@ -362,7 +447,7 @@ export function KnowledgeModule({
                 <select
                   aria-label="Filter folder"
                   value={folderFilter}
-                  onChange={(e) => setFolderFilter(e.target.value)}
+                  onChange={(e) => handleFolderFilterChange(e.target.value)}
                   className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                 >
                   <option value="ALL">All Vault Folders ({state.brainItems.length})</option>
@@ -375,40 +460,42 @@ export function KnowledgeModule({
               </div>
 
               <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/70">
-                {filteredBrain.map((item) => {
-                  const selected = activeBrain?.id === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        onSelectBrain(item.id);
-                        onInspect({ kind: 'brain', itemId: item.id });
-                        setEditingBrain(false);
-                      }}
-                      className={`w-full p-3.5 text-left transition-colors ${
-                        selected
-                          ? 'bg-indigo-50/70 dark:bg-indigo-950/40'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                          {item.title}
-                        </span>
-                        {item.pinned && <Pin className="w-3 h-3 text-indigo-500 shrink-0" />}
-                      </div>
-                      <div className="mt-1 text-[11px] text-slate-500 truncate">
-                        {item.folder} · {item.tags.join(' · ')}
-                      </div>
-                    </button>
-                  );
-                })}
+                {filteredBrain.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-500">
+                    No notes match the current filter.
+                  </div>
+                ) : (
+                  filteredBrain.map((item) => {
+                    const selected = activeBrain?.id === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleSelectBrainNote(item.id)}
+                        className={`w-full p-3.5 text-left transition-colors ${
+                          selected
+                            ? 'bg-indigo-50/70 dark:bg-indigo-950/40'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {item.title}
+                          </span>
+                          {item.pinned && <Pin className="w-3 h-3 text-indigo-500 shrink-0" />}
+                        </div>
+                        <div className="mt-1 text-[11px] text-slate-500 truncate">
+                          {item.folder} · {item.tags.join(' · ')}
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
             {/* Right Markdown Editor / Reader */}
-            <div className="lg:col-span-8 p-6 overflow-y-auto">
+            <div className="lg:col-span-8 p-6 overflow-y-auto min-h-0">
               {activeBrain ? (
                 <div className="max-w-3xl space-y-5">
                   <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
@@ -469,9 +556,49 @@ export function KnowledgeModule({
                       <Markdown>{activeBrain.content}</Markdown>
                     </div>
                   )}
+
+                  {activeBrain.backlinks.length > 0 && (
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Backlinks
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {activeBrain.backlinks.map((ref) => {
+                          const normalized = ref.trim().toLowerCase();
+                          const targetNote =
+                            brainById.get(ref) ??
+                            state.brainItems.find((b) => b.title.toLowerCase() === normalized);
+                          if (targetNote) {
+                            return (
+                              <button
+                                key={ref}
+                                type="button"
+                                onClick={() => handleSelectBrainNote(targetNote.id, { ensureVisible: true })}
+                                className="px-2.5 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                              >
+                                {targetNote.title}
+                              </button>
+                            );
+                          }
+                          return (
+                            <span
+                              key={ref}
+                              className="px-2.5 py-1 text-xs font-mono rounded-md border border-slate-200 dark:border-slate-800 text-slate-400"
+                            >
+                              {ref}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="py-20 text-center text-sm text-slate-500">Select or create a Brain note.</div>
+                <div className="py-20 text-center text-sm text-slate-500">
+                  {state.brainItems.length > 0 && filteredBrain.length === 0
+                    ? 'No notes match the current filter.'
+                    : 'Select or create a Brain note.'}
+                </div>
               )}
             </div>
           </div>
@@ -479,35 +606,56 @@ export function KnowledgeModule({
 
         {activeTab === 'wiki' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 h-full min-h-[540px]">
-            <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/70 bg-white dark:bg-slate-900/40">
-              {state.wikiPages.map((page) => {
-                const selected = activeWiki?.id === page.id;
-                return (
-                  <button
-                    key={page.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectWiki(page.id);
-                      onInspect({ kind: 'wiki', pageId: page.id });
-                    }}
-                    className={`w-full p-4 text-left transition-colors ${
-                      selected
-                        ? 'bg-indigo-50/70 dark:bg-indigo-950/40'
-                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                    }`}
-                  >
-                    <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400">{page.category}</div>
-                    <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{page.title}</div>
-                    <div className="mt-1 text-xs text-slate-500 line-clamp-2">{page.summary}</div>
-                    <div className="mt-2 text-[11px] font-mono tabular-nums text-slate-400">
-                      {page.citations.length} source citation(s) · Compiled by {page.compiledBy}
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900/40 min-h-0">
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                  <input
+                    value={wikiSearch}
+                    onChange={(e) => setWikiSearch(e.target.value)}
+                    placeholder="Filter wiki pages..."
+                    aria-label="Filter wiki pages"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/70">
+                {filteredWiki.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-500">
+                    No wiki pages match the current search.
+                  </div>
+                ) : (
+                  filteredWiki.map((page) => {
+                    const selected = activeWiki?.id === page.id;
+                    return (
+                      <button
+                        key={page.id}
+                        type="button"
+                        onClick={() => {
+                          onSelectWiki(page.id);
+                          onInspect({ kind: 'wiki', pageId: page.id });
+                        }}
+                        className={`w-full p-4 text-left transition-colors ${
+                          selected
+                            ? 'bg-indigo-50/70 dark:bg-indigo-950/40'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                        }`}
+                      >
+                        <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400">{page.category}</div>
+                        <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{page.title}</div>
+                        <div className="mt-1 text-xs text-slate-500 line-clamp-2">{page.summary}</div>
+                        <div className="mt-2 text-[11px] font-mono tabular-nums text-slate-400">
+                          {page.citations.length} source citation(s) · Compiled by {page.compiledBy}
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
 
-            <div className="lg:col-span-8 p-6 overflow-y-auto">
+            <div className="lg:col-span-8 p-6 overflow-y-auto min-h-0">
               {activeWiki ? (
                 <article className="max-w-3xl space-y-5">
                   <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
@@ -522,9 +670,54 @@ export function KnowledgeModule({
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     <Markdown>{activeWiki.content}</Markdown>
                   </div>
+
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Source Citations
+                    </div>
+                    {activeWiki.citations.length === 0 ? (
+                      <div className="text-xs text-slate-500">No source citations linked.</div>
+                    ) : (
+                      <ul className="space-y-1.5">
+                        {activeWiki.citations.map((citationId) => {
+                          const sourceNote = brainById.get(citationId);
+                          if (!sourceNote) {
+                            return (
+                              <li
+                                key={citationId}
+                                className="text-xs font-mono text-slate-400"
+                              >
+                                missing source ({citationId})
+                              </li>
+                            );
+                          }
+                          return (
+                            <li key={citationId}>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleSelectBrainNote(sourceNote.id, {
+                                    ensureVisible: true,
+                                    switchToBrainTab: true,
+                                  })
+                                }
+                                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline text-left"
+                              >
+                                {sourceNote.title}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
                 </article>
               ) : (
-                <div className="py-20 text-center text-sm text-slate-500">Select a Wiki topic page.</div>
+                <div className="py-20 text-center text-sm text-slate-500">
+                  {state.wikiPages.length > 0 && filteredWiki.length === 0
+                    ? 'No wiki pages match the current search.'
+                    : 'Select a Wiki topic page.'}
+                </div>
               )}
             </div>
           </div>
@@ -534,7 +727,7 @@ export function KnowledgeModule({
           <div className="p-6 space-y-4 h-full flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-1.5">
-                {['ALL', 'Project', 'Document', 'Agent', 'Concept', 'Model'].map((t) => (
+                {(['ALL', ...NODE_TYPES] as const).map((t) => (
                   <button
                     key={t}
                     type="button"
@@ -571,92 +764,166 @@ export function KnowledgeModule({
             </div>
 
             <div className="flex-1 min-h-[440px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden relative">
-              <svg
-                viewBox="0 0 760 450"
-                className="w-full h-full select-none"
-                style={{ transform: `scale(${graphZoom})`, transformOrigin: 'center center' }}
-              >
-                <defs>
-                  <marker
-                    id="arrow"
-                    viewBox="0 0 10 10"
-                    refX="20"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                    orient="auto-start-reverse"
+              {(() => {
+                const vbWidth = GRAPH_BASE_WIDTH / graphZoom;
+                const vbHeight = GRAPH_BASE_HEIGHT / graphZoom;
+                const vbX = (GRAPH_BASE_WIDTH - vbWidth) / 2 + graphPan.x;
+                const vbY = (GRAPH_BASE_HEIGHT - vbHeight) / 2 + graphPan.y;
+                return (
+                  <svg
+                    ref={svgRef}
+                    viewBox={`${vbX} ${vbY} ${vbWidth} ${vbHeight}`}
+                    className={`w-full h-full select-none ${
+                      isPanning ? 'cursor-grabbing' : 'cursor-grab'
+                    }`}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      panStartRef.current = {
+                        clientX: e.clientX,
+                        clientY: e.clientY,
+                        panX: graphPan.x,
+                        panY: graphPan.y,
+                      };
+                      setIsPanning(true);
+                      e.currentTarget.setPointerCapture?.(e.pointerId);
+                    }}
+                    onPointerMove={(e) => {
+                      const start = panStartRef.current;
+                      if (!start || !svgRef.current) return;
+                      const rect = svgRef.current.getBoundingClientRect();
+                      if (rect.width <= 0 || rect.height <= 0) return;
+                      const scale = Math.max(vbWidth / rect.width, vbHeight / rect.height);
+                      const dx = (e.clientX - start.clientX) * scale;
+                      const dy = (e.clientY - start.clientY) * scale;
+                      setGraphPan({
+                        x: Math.max(-500, Math.min(500, start.panX - dx)),
+                        y: Math.max(-350, Math.min(350, start.panY - dy)),
+                      });
+                    }}
+                    onPointerUp={(e) => {
+                      if (panStartRef.current) {
+                        panStartRef.current = null;
+                        setIsPanning(false);
+                        if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
+                      }
+                    }}
+                    onPointerCancel={(e) => {
+                      if (panStartRef.current) {
+                        panStartRef.current = null;
+                        setIsPanning(false);
+                        if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
+                      }
+                    }}
                   >
-                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
-                  </marker>
-                </defs>
+                    <defs>
+                      <marker
+                        id="arrow"
+                        viewBox="0 0 10 10"
+                        refX="20"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto-start-reverse"
+                      >
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                    </defs>
 
-                {state.graphEdges
-                  .filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
-                  .map((edge) => {
-                    const src = state.graphNodes.find((n) => n.id === edge.source);
-                    const tgt = state.graphNodes.find((n) => n.id === edge.target);
-                    if (!src || !tgt) return null;
-                    const highlighted = activeNodeId === src.id || activeNodeId === tgt.id;
-                    const midX = (src.x + tgt.x) / 2;
-                    const midY = (src.y + tgt.y) / 2;
-                    return (
-                      <g key={edge.id}>
-                        <line
-                          x1={src.x}
-                          y1={src.y}
-                          x2={tgt.x}
-                          y2={tgt.y}
-                          stroke={highlighted ? '#6366f1' : '#475569'}
-                          strokeOpacity={highlighted ? 0.9 : 0.35}
-                          strokeWidth={highlighted ? 2 : 1.2}
-                          markerEnd="url(#arrow)"
-                        />
-                        <text
-                          x={midX}
-                          y={midY - 4}
-                          textAnchor="middle"
-                          className="fill-slate-400 text-[9px] font-mono"
-                        >
-                          {edge.relation}
-                        </text>
-                      </g>
-                    );
-                  })}
+                    {state.graphEdges
+                      .filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
+                      .map((edge) => {
+                        const src = nodeById.get(edge.source);
+                        const tgt = nodeById.get(edge.target);
+                        if (!src || !tgt) return null;
+                        const highlighted =
+                          effectiveActiveNodeId !== null &&
+                          (effectiveActiveNodeId === src.id || effectiveActiveNodeId === tgt.id);
+                        const midX = (src.x + tgt.x) / 2;
+                        const midY = (src.y + tgt.y) / 2;
+                        return (
+                          <g key={edge.id}>
+                            <line
+                              x1={src.x}
+                              y1={src.y}
+                              x2={tgt.x}
+                              y2={tgt.y}
+                              stroke={highlighted ? '#6366f1' : '#475569'}
+                              strokeOpacity={highlighted ? 0.9 : 0.35}
+                              strokeWidth={highlighted ? 2 : 1.2}
+                              markerEnd="url(#arrow)"
+                            />
+                            {highlighted && (
+                              <text
+                                x={midX}
+                                y={midY - 4}
+                                textAnchor="middle"
+                                className="fill-slate-400 text-[9px] font-mono"
+                              >
+                                {edge.relation}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
 
-                {visibleNodes.map((node) => {
-                  const isActive = activeNodeId === node.id;
-                  const color = NODE_COLORS[node.type] ?? '#6366f1';
-                  return (
-                    <g
-                      key={node.id}
-                      transform={`translate(${node.x}, ${node.y})`}
-                      className="cursor-pointer"
-                      onClick={() => {
+                    {visibleNodes.map((node) => {
+                      const isActive = effectiveActiveNodeId === node.id;
+                      const color = NODE_COLORS[node.type] ?? '#6366f1';
+                      const selectNode = () => {
                         setActiveNodeId(node.id);
                         onInspect({ kind: 'node', nodeId: node.id });
-                      }}
-                    >
-                      <circle
-                        r={isActive ? 18 : 14}
-                        fill={color}
-                        fillOpacity={isActive ? 0.95 : 0.8}
-                        stroke={isActive ? '#ffffff' : color}
-                        strokeWidth={isActive ? 2.5 : 1}
-                      />
-                      <text
-                        y={28}
-                        textAnchor="middle"
-                        className="fill-slate-800 dark:fill-slate-200 text-[11px] font-medium"
-                      >
-                        {node.label}
-                      </text>
-                      <text y={40} textAnchor="middle" className="fill-slate-400 text-[9px] font-mono">
-                        {node.type}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
+                      };
+                      return (
+                        <g
+                          key={node.id}
+                          transform={`translate(${node.x}, ${node.y})`}
+                          className="group cursor-pointer focus:outline-none"
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`${node.label}, ${node.type}`}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={selectNode}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              selectNode();
+                            }
+                          }}
+                        >
+                          <circle
+                            r={isActive ? 23 : 19}
+                            fill="none"
+                            stroke="#6366f1"
+                            strokeWidth={2.5}
+                            className="opacity-0 group-focus-visible:opacity-100 pointer-events-none transition-opacity"
+                          />
+                          <circle
+                            r={isActive ? 18 : 14}
+                            fill={color}
+                            fillOpacity={isActive ? 0.95 : 0.8}
+                            stroke={isActive ? '#ffffff' : color}
+                            strokeWidth={isActive ? 2.5 : 1}
+                          />
+                          <text
+                            y={28}
+                            textAnchor="middle"
+                            className="fill-slate-800 dark:fill-slate-200 text-[11px] font-medium"
+                          >
+                            {node.label}
+                          </text>
+                          <text y={40} textAnchor="middle" className="fill-slate-400 text-[9px] font-mono">
+                            {node.type}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -717,7 +984,7 @@ export function KnowledgeModule({
                     onClick={() => {
                       setInboxTitle('Hybrid Vector + FTS5 Retrieval Spec');
                       setInboxText(
-                        'Architecture decision: replace the 3,000-item in-memory vector cap with paginated sqlite-vec queries paired with FTS5 BM25 ranking. Never send raw credentials like sk-proj-example1234567890abcdef to external endpoints.'
+                        'Architecture decision: replace the 3,000-item in-memory vector cap with paginated sqlite-vec queries paired with FTS5 BM25 ranking. Never send raw credentials like sk-test-FAKE-000000000000 to external endpoints.'
                       );
                     }}
                     className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
@@ -739,8 +1006,8 @@ export function KnowledgeModule({
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span>
                     {privacyPreview.redactionCount > 0
-                      ? `Privacy Guard detected ${privacyPreview.redactionCount} secret pattern(s) (${privacyPreview.matchedRules.join(', ')}) — will redact before LLM call.`
-                      : 'Privacy Guard active: API keys, AWS IDs, and tokens are redacted automatically.'}
+                      ? `Privacy Guard (client-side preview only; the server redacts): detected ${privacyPreview.redactionCount} secret pattern(s) (${privacyPreview.matchedRules.join(', ')}).`
+                      : 'Privacy Guard (client-side preview only; the server redacts): API keys, AWS IDs, and tokens are redacted automatically.'}
                   </span>
                 </div>
 
@@ -770,6 +1037,54 @@ export function KnowledgeModule({
                 {ingestSummary}
               </div>
             )}
+
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Recent ingests
+              </div>
+              {recentIngests.length === 0 ? (
+                <div className="text-xs text-slate-500">No ingests run in this session yet.</div>
+              ) : (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                  {recentIngests.map((row) => (
+                    <div
+                      key={row.id}
+                      className="py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                          {row.title}
+                        </span>
+                        <span className="font-mono text-slate-400 shrink-0">{row.time}</span>
+                        <span
+                          className={`font-mono px-1.5 py-0.5 rounded shrink-0 ${
+                            row.status === 'filed'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </div>
+                      {row.status === 'filed' && row.brainId && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSelectBrainNote(row.brainId!, {
+                              ensureVisible: true,
+                              switchToBrainTab: true,
+                            })
+                          }
+                          className="text-indigo-600 dark:text-indigo-400 hover:underline shrink-0"
+                        >
+                          Open Brain note
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

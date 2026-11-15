@@ -577,9 +577,9 @@ export function CortexShell() {
           <button
             type="button"
             onClick={() => setContextOpen((v) => !v)}
-            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+            className="hidden md:inline-flex p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
             aria-label="Toggle Context Panel"
-            title="Toggle Context Panel"
+            title="Toggle Context Panel (Ctrl+B)"
           >
             <PanelLeft className="w-4 h-4" />
           </button>
@@ -892,6 +892,7 @@ export function CortexShell() {
         onToggleTheme={() =>
           handleUpdateSettings({ theme: state.settings.theme === 'dark' ? 'light' : 'dark' })
         }
+        onToggleContext={() => setContextOpen((v) => !v)}
         onToggleInspector={() => setInspectorOpen((v) => !v)}
         onToggleRunLog={() => setRunLogOpen((v) => !v)}
       />
