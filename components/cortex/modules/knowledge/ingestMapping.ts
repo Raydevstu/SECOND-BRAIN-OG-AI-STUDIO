@@ -165,6 +165,10 @@ export function mapLibrarianResultToKnowledge({
       nodeIdByLabel.set(key, existing.id);
     }
   }
+  const sourceLabelKey = sourceLabel.trim().toLowerCase();
+  if (sourceLabelKey) {
+    nodeIdByLabel.set(sourceLabelKey, sourceNodeId);
+  }
 
   const seenEdgeKeys = new Set<string>();
 
@@ -193,20 +197,22 @@ export function mapLibrarianResultToKnowledge({
       });
     }
 
-    const validRelation: GraphRelation = VALID_RELATIONS.includes(ent.relation as GraphRelation)
-      ? (ent.relation as GraphRelation)
-      : 'REFERENCES';
+    if (targetId !== sourceNodeId) {
+      const validRelation: GraphRelation = VALID_RELATIONS.includes(ent.relation as GraphRelation)
+        ? (ent.relation as GraphRelation)
+        : 'REFERENCES';
 
-    const edgeKey = `${sourceNodeId}->${targetId}:${validRelation}`;
-    if (!seenEdgeKeys.has(edgeKey)) {
-      seenEdgeKeys.add(edgeKey);
-      edges.push({
-        id: `edge-ent-${timestampMs}-${idx}`,
-        source: sourceNodeId,
-        target: targetId,
-        relation: validRelation,
-        weight: 1,
-      });
+      const edgeKey = `${sourceNodeId}->${targetId}:${validRelation}`;
+      if (!seenEdgeKeys.has(edgeKey)) {
+        seenEdgeKeys.add(edgeKey);
+        edges.push({
+          id: `edge-ent-${timestampMs}-${idx}`,
+          source: sourceNodeId,
+          target: targetId,
+          relation: validRelation,
+          weight: 1,
+        });
+      }
     }
   });
 

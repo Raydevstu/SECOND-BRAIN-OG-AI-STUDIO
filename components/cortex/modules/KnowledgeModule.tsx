@@ -134,10 +134,16 @@ export function KnowledgeModule({
     filteredBrain.find((b) => b.id === selectedBrainId) ?? filteredBrain[0] ?? null;
 
   const prevActiveBrainIdRef = useRef<string | null>(activeBrain?.id ?? null);
+  const justCreatedNoteIdRef = useRef<string | null>(null);
   useEffect(() => {
     const currentId = activeBrain?.id ?? null;
     if (prevActiveBrainIdRef.current !== currentId) {
       prevActiveBrainIdRef.current = currentId;
+      if (currentId && justCreatedNoteIdRef.current === currentId) {
+        justCreatedNoteIdRef.current = null;
+        return;
+      }
+      justCreatedNoteIdRef.current = null;
       if (editingBrain) {
         const raf = requestAnimationFrame(() => setEditingBrain(false));
         return () => cancelAnimationFrame(raf);
@@ -266,6 +272,7 @@ export function KnowledgeModule({
       updatedAt: new Date().toISOString(),
       source: 'Manual Note',
     };
+    justCreatedNoteIdRef.current = newNote.id;
     onAddBrainItem(newNote);
     onSelectBrain(newNote.id);
     onInspect({ kind: 'brain', itemId: newNote.id });
