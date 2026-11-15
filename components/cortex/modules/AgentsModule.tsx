@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Markdown from 'react-markdown';
 import {
   Bot,
@@ -17,6 +17,15 @@ import {
 import { AVAILABLE_MODELS } from '@/lib/seed-data';
 import { retrieveHybridContext } from '@/lib/rag';
 import type { AgentDefinition, CortexState, InspectorTarget, ProviderId, RunLogEntry } from '@/lib/types';
+import {
+  detectIdConflict,
+  diffPermissions,
+  flagPromptSignals,
+  parseImport,
+  type IdConflictResult,
+  type PermissionDiffItem,
+} from './agents/importReview';
+import { ImportReviewPanel } from './agents/ImportReviewPanel';
 
 interface AgentsModuleProps {
   state: CortexState;
@@ -61,7 +70,36 @@ export function AgentsModule({
   const [draftPrompt, setDraftPrompt] = useState('');
   const [draftTools, setDraftTools] = useState('memory.read, wiki.read, web.search');
   const [importJson, setImportJson] = useState('');
-  const [importError, setImportError] = useState<string | null>(null);
+  const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [importStep, setImportStep] = useState<'edit' | 'review'>('edit');
+  const [pendingReview, setPendingReview] = useState<{
+    agent: AgentDefinition;
+    diffs: PermissionDiffItem[];
+    conflict: IdConflictResult;
+    promptWarnings: string[];
+  } | null>(null);
+  const [highRiskAck, setHighRiskAck] = useState(false);
+  const [importedIds, setImportedIds] = useState<Set<string>>(() => new Set());
+
+  const closeModal = useCallback(() => {
+    setModalMode(null);
+    setImportStep('edit');
+    setPendingReview(null);
+    setImportErrors([]);
+    setHighRiskAck(false);
+  }, []);
+
+  useEffect(() => {
+    if (!modalMode) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [modalMode, closeModal]);
 
   const selectedAgent = useMemo(
     () => state.agents.find((a) => a.id === selectedAgentId) ?? state.agents[0],
@@ -91,6 +129,9 @@ export function AgentsModule({
     });
 
     try {
+      // REAL APP: send only { agentId, task }. The server loads the
+      // definition and enforces permissions. Never trust client-sent
+      // systemPrompt/tools/budget.
       const res = await fetch('/api/agent-run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -175,7 +216,7 @@ export function AgentsModule({
       memory: { read: ['project', 'knowledge'], write: ['agent'] },
       delegation: { canSpawn: false, allowed: [], maxDepth: 0, maxConcurrent: 1 },
       budget: { maxTokensPerRun: 120000, maxCostUsd: 0.25 },
-      permissions: { fs: 'project-only', network: true, shell: 'ask' },
+      permissions: { fs: 'read-only', network: false, shell: 'deny' },
       protocol: 'native',
     };
     onSaveAgent(newAgent);
@@ -189,36 +230,50 @@ export function AgentsModule({
 
   const handleImportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setImportError(null);
-    try {
-      const raw = JSON.parse(importJson) as Partial<AgentDefinition>;
-      if (!raw.name) throw new Error('JSON must include a "name" field.');
-      const imported: AgentDefinition = {
-        id: raw.id || `imported-${Date.now().toString().slice(-4)}`,
-        version: raw.version || '1.0.0',
-        name: raw.name,
-        description: raw.description || 'Imported AgentDefinition JSON.',
-        roleTag: raw.roleTag || 'Imported Preset',
-        provider: (raw.provider as ProviderId) || 'gemini',
-        model: raw.model || 'gemini-4-hydrogen',
-        fallbackModels: raw.fallbackModels || ['gemini-3.1-flash-lite'],
-        systemPrompt: raw.systemPrompt || `You are ${raw.name}.`,
-        skills: raw.skills || [],
-        tools: raw.tools || ['memory.read'],
-        mcpServers: raw.mcpServers || ['cortex-brain'],
-        memory: raw.memory || { read: ['knowledge'], write: ['agent'] },
-        delegation: raw.delegation || { canSpawn: false, allowed: [], maxDepth: 0, maxConcurrent: 1 },
-        budget: raw.budget || { maxTokensPerRun: 100000, maxCostUsd: 0.25 },
-        permissions: raw.permissions || { fs: 'read-only', network: false, shell: 'deny' },
-        protocol: raw.protocol || 'native',
-      };
-      onSaveAgent(imported);
-      onSelectAgent(imported.id);
-      setModalMode(null);
-      setImportJson('');
-    } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Invalid JSON payload.');
+    setImportErrors([]);
+    const parsed = parseImport(importJson);
+    if (!parsed.ok) {
+      setImportErrors(parsed.errors);
+      return;
     }
+
+    const conflict = detectIdConflict(parsed.agent.id, state.agents);
+    const resolvedAgent: AgentDefinition = conflict.hasConflict
+      ? { ...parsed.agent, id: conflict.resolvedId }
+      : parsed.agent;
+
+    const diffs = diffPermissions(null, resolvedAgent);
+    const promptWarnings = flagPromptSignals(resolvedAgent.systemPrompt);
+
+    setPendingReview({
+      agent: resolvedAgent,
+      diffs,
+      conflict,
+      promptWarnings,
+    });
+    setHighRiskAck(false);
+    setImportStep('review');
+  };
+
+  const handleApproveImport = () => {
+    if (!pendingReview) return;
+    const hasHighRisk = pendingReview.diffs.some((d) => d.risk === 'high');
+    if (hasHighRisk && !highRiskAck) return;
+
+    onSaveAgent(pendingReview.agent);
+    onSelectAgent(pendingReview.agent.id);
+    setImportedIds((prev) => {
+      const next = new Set(prev);
+      next.add(pendingReview.agent.id);
+      return next;
+    });
+    setImportJson('');
+    closeModal();
+  };
+
+  const handleRejectImport = () => {
+    setImportJson('');
+    closeModal();
   };
 
   return (
@@ -237,7 +292,10 @@ export function AgentsModule({
           <button
             type="button"
             onClick={() => {
-              setImportError(null);
+              setImportErrors([]);
+              setImportStep('edit');
+              setPendingReview(null);
+              setHighRiskAck(false);
               setModalMode('import');
             }}
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
@@ -278,9 +336,16 @@ export function AgentsModule({
                 <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                   {agent.name}
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 shrink-0">
-                  {agent.protocol === 'a2a' ? 'A2A' : agent.protocol === 'mcp' ? 'MCP' : 'Native'}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {(agent.id.startsWith('imported-') || importedIds.has(agent.id)) && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
+                      Imported
+                    </span>
+                  )}
+                  <span className="text-[11px] font-mono text-slate-500">
+                    {agent.protocol === 'a2a' ? 'A2A' : agent.protocol === 'mcp' ? 'MCP' : 'Native'}
+                  </span>
+                </div>
               </div>
               <div className="mt-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">
                 {agent.roleTag}
@@ -439,19 +504,35 @@ export function AgentsModule({
       {modalMode && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
-          onClick={() => setModalMode(null)}
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-label={
+            modalMode === 'create'
+              ? 'Create Agent Definition'
+              : importStep === 'review'
+                ? 'Review Agent Import'
+                : 'Import Agent JSON'
+          }
         >
           <div
-            className="w-full max-w-lg rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4"
+            className={`w-full ${
+              modalMode === 'import' && importStep === 'review' ? 'max-w-2xl' : 'max-w-lg'
+            } max-h-[85vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                {modalMode === 'create' ? 'Create Agent Definition' : 'Import Agent JSON'}
+                {modalMode === 'create'
+                  ? 'Create Agent Definition'
+                  : importStep === 'review'
+                    ? 'Review Agent Import'
+                    : 'Import Agent JSON'}
               </h3>
               <button
                 type="button"
-                onClick={() => setModalMode(null)}
+                onClick={closeModal}
+                aria-label="Close modal"
                 className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
@@ -540,7 +621,7 @@ export function AgentsModule({
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setModalMode(null)}
+                    onClick={closeModal}
                     className="px-3.5 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800"
                   >
                     Cancel
@@ -553,6 +634,22 @@ export function AgentsModule({
                   </button>
                 </div>
               </form>
+            ) : importStep === 'review' && pendingReview ? (
+              <ImportReviewPanel
+                agent={pendingReview.agent}
+                diffs={pendingReview.diffs}
+                conflict={pendingReview.conflict}
+                promptWarnings={pendingReview.promptWarnings}
+                highRiskAcknowledged={highRiskAck}
+                onToggleHighRiskAck={setHighRiskAck}
+                onApprove={handleApproveImport}
+                onBackToEdit={() => {
+                  setImportStep('edit');
+                  setPendingReview(null);
+                  setHighRiskAck(false);
+                }}
+                onReject={handleRejectImport}
+              />
             ) : (
               <form onSubmit={handleImportSubmit} className="space-y-3">
                 <p className="text-xs text-slate-500">
@@ -567,11 +664,17 @@ export function AgentsModule({
                   placeholder='{"name": "Research Agent", "provider": "gemini", "model": "gemini-4-hydrogen", "tools": ["web.search", "memory.read", "wiki.read"]}'
                   className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950"
                 />
-                {importError && <p className="text-xs text-red-500">{importError}</p>}
+                {importErrors.length > 0 && (
+                  <ul className="list-disc list-inside space-y-1 text-xs text-red-500">
+                    {importErrors.map((err, idx) => (
+                      <li key={idx}>{err}</li>
+                    ))}
+                  </ul>
+                )}
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setModalMode(null)}
+                    onClick={closeModal}
                     className="px-3.5 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800"
                   >
                     Cancel
@@ -580,7 +683,7 @@ export function AgentsModule({
                     type="submit"
                     className="px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-500"
                   >
-                    Import Agent
+                    Review Import
                   </button>
                 </div>
               </form>
