@@ -1,0 +1,1063 @@
+15:55:08.583	$ next dev
+15:55:09.486	▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://169.254.0.2:3000
+- Environments: .env.development.local
+✓ Ready in 673ms
+✓ Running next.config.mjs took 35ms
+15:55:18.605	GET / 200 in 64ms (next.js: 12ms, application-code: 51ms)
+15:55:21.011	⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+15:55:21.412	▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://169.254.0.2:3000
+- Environments: .env.development.local
+✓ Ready in 322ms
+✓ Running next.config.mjs took 31ms
+15:55:21.915	We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next/dev/types/**/*.ts'
+
+  The following mandatory changes were made to your tsconfig.json:
+
+  	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+15:56:15.578	Turbopack has seen frequent file updates and is waiting for the filesystem to settle (0.5s elapsed so far; last modified: "/vercel/share/v0-project/node_modules/.pnpm/typescript@5.7.3").
+15:56:15.880	Turbopack build encountered 1 error:
+./app
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: /vercel/share/v0-project/app
+Filesystem root used for resolution: /vercel/share/v0-project
+
+Possible causes:
+  - node_modules is being reorganized by a concurrent install (e.g. pnpm adding a package with a `next` peer dependency). This is transient and should clear once the install completes.
+  - node_modules/next was removed, renamed, or has a broken symlink.
+  - The workspace root is incorrect — see turbopack.root in the Next.js config docs for how to configure it.
+  - In a monorepo, the Next.js package may only exist in a directory above the closest directory containing a package manager lockfile. The workspace root is detected by locating the nearest package manager lockfile.
+  - Next.js is installed globally rather than as a project dependency. This is not supported; install it locally.
+
+Note: To ensure a hermetic build and a portable cache, files outside of the workspace root are not compiled.
+
+https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+15:58:09.480	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+15:58:10.587	GET / 500 in 1067ms
+ GET / 500 in 1067ms
+15:58:10.587	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20page%20endpoint%20%2F_app&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20page%20endpoint%20%2F_app%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CPageEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20page%20endpoint%20%2F_app%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2APageEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20PageEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20PageEndpoint%3A%3Ainternal_ssr_chunk%20failed%0A-%20Execution%20of%20PageEndpoint%3A%3Ainternal_ssr_chunk_module%20failed%0A-%20Execution%20of%20%2AProcessResult%3A%3Amodule%20failed%0A-%20Execution%20of%20%2A%3CModuleAssetContext%20as%20AssetContext%3E%3A%3Aprocess%20failed%0A-%20Execution%20of%20PagesProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+15:58:19.705	GET / 500 in 9ms
+ GET / 500 in 9ms
+15:58:19.705	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+15:58:31.725	GET / 500 in 7ms
+ GET / 500 in 7ms
+15:58:31.725	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+15:58:33.561	Installing dependencies...
+15:58:34.230	Installing dependencies with pnpm@10.34.3...
+15:58:35.035	Lockfile is up to date, resolution step is skipped
+15:58:35.135	Already up to date
+15:58:35.579	Done in 1.3s using pnpm v10.34.3
+16:00:58.321	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:00:58.422	GET / 500 in 12ms
+ GET / 500 in 12ms
+16:00:58.422	⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:01:05.836	GET / 500 in 8ms
+ GET / 500 in 8ms
+16:01:05.836	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:02:09.753	-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to /tmp/next-panic-2c94865c8c13c99197f569d22c108340.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2Fpage&body=Turbopack%20version%3A%20%6029bbeab0%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2Fpage%0A%0ACaused%20by%3A%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%0ADebug%20info%3A%0A-%20Execution%20of%20get_written_endpoint_with_issues_operation%20failed%0A-%20Execution%20of%20endpoint_write_to_disk%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aapp_page_entry%20failed%0A-%20Execution%20of%20%2Aget_app_page_entry%20failed%0A-%20Execution%20of%20AppProject%3A%3Arsc_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20%2AAppProject%3A%3Aget_rsc_transitions%20failed%0A-%20Execution%20of%20AppProject%3A%3Aecmascript_client_reference_transition%20failed%0A-%20Execution%20of%20%2ANextEcmascriptClientReferenceTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Assr_module_context%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_transition%20failed%0A-%20Execution%20of%20%2AFullContextTransition%3A%3Anew%20failed%0A-%20Execution%20of%20AppProject%3A%3Ashared_module_context%20failed%0A-%20Execution%20of%20%2AModuleAssetContext%3A%3Anew%20failed%0A-%20Execution%20of%20get_server_resolve_options_context%20failed%0A-%20File%20not%20found%3A%20%5Bproject%5D%2Fnode_modules%2F.pnpm%2Fnext%4015.5.29_%40babel%2Bcore%407.29.7_%40opentelemetry%2Bapi%401.9.1_%40types%2Bnode%4020.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932%2Fnode_modules%2Fnext%2Fdist%2Flib%2Fserver-external-packages.jsonc%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:02:09.853	GET / 500 in 8ms
+ GET / 500 in 9ms
+16:02:09.853	Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:02:10.755	GET / 500 in 6ms
+ GET / 500 in 6ms
+16:02:10.755	⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+⨯ Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+Error [TurbopackInternalError]: Failed to write page endpoint /_app
+
+Caused by:
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of *all_asset_paths failed
+- Execution of *PageEndpointOutput::output_assets failed
+- Execution of PageEndpoint::output failed
+- Execution of PageEndpoint::internal_ssr_chunk failed
+- Execution of PageEndpoint::internal_ssr_chunk_module failed
+- Execution of *ProcessResult::module failed
+- Execution of *<ModuleAssetContext as AssetContext>::process failed
+- Execution of PagesProject::ssr_module_context failed
+- Execution of *ModuleAssetContext::new failed
+- Execution of get_server_resolve_options_context failed
+- File not found: [project]/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/lib/server-external-packages.jsonc
+    at <unknown> (TurbopackInternalError: Failed to write page endpoint /_app) {
+  location: undefined
+}
+16:02:49.924	Turbopack build encountered 1 error:
+./app
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: /vercel/share/v0-project/app
+Filesystem root used for resolution: /vercel/share/v0-project
+
+Possible causes:
+  - node_modules is being reorganized by a concurrent install (e.g. pnpm adding a package with a `next` peer dependency). This is transient and should clear once the install completes.
+  - node_modules/next was removed, renamed, or has a broken symlink.
+  - The workspace root is incorrect — see turbopack.root in the Next.js config docs for how to configure it.
+  - In a monorepo, the Next.js package may only exist in a directory above the closest directory containing a package manager lockfile. The workspace root is detected by locating the nearest package manager lockfile.
+  - Next.js is installed globally rather than as a project dependency. This is not supported; install it locally.
+
+Note: To ensure a hermetic build and a portable cache, files outside of the workspace root are not compiled.
+
+https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+16:03:07.079	Error: Failed to load external module next/dist/server/runtime-reacts.external.js: Error: ENOENT: no such file or directory, lstat '/vercel/share/v0-project/node_modules/.pnpm/next@15.5.29_@babel+core@7.29.7_@opentelemetry+api@1.9.1_@types+node@20.19.43_react-dom_3933dc496d9ec65f5f6c2a024d9cd932/node_modules/next/dist/server/runtime-reacts.external.js'
+    at module evaluation (.next/dev/server/chunks/ssr/[externals]__0nozsi_11-dii._.js:52:33) {
+  page: '/'
+}
+16:03:08.383	GET / 500 in 1932ms (next.js: 1838ms, application-code: 94ms)
+ GET / 500 in 1933ms (next.js: 1838ms, application-code: 94ms)
+16:03:08.383	⨯ TypeError: routeModule.ensureInstrumentation is not a function
+    at ignore-listed frames
+Error: Cannot find module './route-modules/pages/builtin/_error'
+Require stack:
+- /vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/load-default-error-components.js
+- /vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/dev/next-dev-server.js
+- /vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/next.js
+- /vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/lib/start-server.js
+    at ignore-listed frames {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/load-default-error-components.js',
+    '/vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/dev/next-dev-server.js',
+    '/vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/next.js',
+    '/vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/lib/start-server.js'
+  ]
+}
+16:03:34.211	⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+16:03:34.310	node:internal/modules/cjs/loader:1503
+  throw err;
+  ^
+
+Error: Cannot find module '/vercel/share/v0-project/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.7_@types+node@24.10.4_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/server/lib/start-server.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1500:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1095:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1116:12)
+    at Module._load (node:internal/modules/cjs/loader:1285:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.16.0
+16:03:34.335	
+16:03:34.335	[ELIFECYCLE] Command failed with exit code 1.
+16:04:02.743	Installing dependencies...
+16:04:03.451	Installing dependencies with pnpm@10.34.3...
+16:04:04.254	Lockfile is up to date, resolution step is skipped
+16:04:04.353	Already up to date
+16:04:04.710	Done in 1.1s using pnpm v10.34.3
+16:04:06.311	Starting dev server: pnpm run dev
+16:04:07.508	> ai-studio-applet@0.1.0 dev /vercel/share/v0-project
+> next dev
+16:04:08.108	▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://169.254.0.2:3000
+- Environments: .env.development.local
+✓ Ready in 464ms
+16:04:08.207	✓ Running next.config.mjs took 32ms
+16:04:12.128	GET / 200 in 313ms (next.js: 13ms, application-code: 299ms)
+16:04:27.859	GET / 200 in 89ms (next.js: 3ms, application-code: 86ms)
+16:14:01.857	✓ Compiled in 269ms
+16:14:10.176	✓ Compiled in 437ms
+16:14:12.883	✓ Compiled in 107ms
+16:14:13.583	⚠ Fast Refresh had to perform a full reload due to a runtime error.
+16:14:15.191	⨯ ReferenceError: InspectorPanel is not defined
+    at CortexShell (components/cortex/CortexShell.tsx:875:14)
+  873 |         {inspectorOpen && (
+  874 |           <div className="hidden xl:flex">
+> 875 |             <InspectorPanel
+      |              ^
+  876 |               state={state}
+  877 |               target={inspectorTarget}
+  878 |               onClose={() => setInspectorOpen(false)} {
+  digest: '1645146052'
+}
+16:14:15.292	GET / 500 in 277ms (next.js: 3ms, application-code: 274ms)
+16:15:06.060	GET / 200 in 169ms (next.js: 4ms, application-code: 165ms)
+16:15:26.903	Uncaught ReferenceError: InspectorPanel is not defined
+    at CortexShell (components/cortex/CortexShell.tsx:875:14)
+    at Page (app/page.tsx:4:10)
+  873 |         </div>
+  874 |
+> 875 |         {/* 4. Collapsible Right Inspector */}
+      |              ^
+  876 |         {inspectorOpen && (
+  877 |           <div className="fixed inset-y-12 right-0 z-30 h-[calc(100vh-3rem)] xl:relative xl:inset-y-auto xl:right-auto xl:z-auto xl:h-full">
+  878 |             <BrowserToolsSidebar
+16:15:44.940	GET / 200 in 86ms (next.js: 2ms, application-code: 83ms)
+16:15:46.947	GET / 200 in 69ms (next.js: 1.6ms, application-code: 68ms)
+16:15:51.264	GET / 200 in 71ms (next.js: 1.8ms, application-code: 69ms)
+16:16:40.664	✓ Compiled in 123ms
+16:16:46.073	✓ Compiled in 74ms
+16:16:49.781	✓ Compiled in 63ms
+16:16:50.181	The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>]
+Incoming: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>] 
+    at BrowserToolsSidebar (components/cortex/BrowserToolsSidebar.tsx:101:12)
+    at Set.forEach (<anonymous>)
+   99 |   }, []);
+  100 |
+> 101 |   useEffect(() => {
+      |            ^
+  102 |     if (activeTab === 'preview' || activeTab === 'annotate') {
+  103 |       lastPreviewWindowRef.current = previewRef.current?.contentWindow ?? lastPreviewWindowRef.current;
+  104 |     } (components/cortex/BrowserToolsSidebar.tsx:101:12)
+16:17:24.873	✓ Compiled in 109ms
+16:17:28.381	✓ Compiled in 66ms
+16:17:28.581	The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>]
+Incoming: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>, 0] 
+    at BrowserToolsSidebar (components/cortex/BrowserToolsSidebar.tsx:102:12)
+    at Set.forEach (<anonymous>)
+  100 |   }, []);
+  101 |
+> 102 |   useEffect(() => {
+      |            ^
+  103 |     if (activeTab === 'preview' || activeTab === 'annotate') {
+  104 |       lastPreviewWindowRef.current = previewRef.current?.contentWindow ?? lastPreviewWindowRef.current;
+  105 |     } (components/cortex/BrowserToolsSidebar.tsx:102:12)
+16:17:32.892	✓ Compiled in 81ms
+16:17:38.105	✓ Compiled in 119ms
+16:18:02.080	✓ Compiled in 80ms
+16:18:23.419	GET / 200 in 110ms (next.js: 11ms, application-code: 99ms)
+16:18:42.764	✓ Compiled in 68ms
+16:19:04.543	The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>]
+Incoming: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>] 
+    at BrowserToolsSidebar (components/cortex/BrowserToolsSidebar.tsx:100:8)
+    at Set.forEach (<anonymous>)
+   98 |     window.addEventListener('message', onMessage);
+   99 |     return () => window.removeEventListener('message', onMessage);
+> 100 |   }, []);
+      |        ^
+  101 |
+  102 |   useEffect(() => {
+  103 |     if (activeTab === 'preview' || activeTab === 'annotate') { (components/cortex/BrowserToolsSidebar.tsx:100:8)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>]
+Incoming: [preview, false, <main class="demo">
+  <span class="eyebrow">LIVE PREVIEW</span>
+  <h1>Build something thoughtful.</h1>
+  <p>Edit the markup tab to update this page instantly.</p>
+  <button class="action">Explore the workspace</button>
+</main>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f5f8; color: #172033; font: 15px/1.6 system-ui, sans-serif; }
+  .demo { width: min(520px, calc(100% - 40px)); padding: 48px; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: 0 20px 60px #17203312; }
+  .eyebrow { color: #6266d9; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .16em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.1; letter-spacing: -.05em; }
+  p { color: #64748b; }
+  .action { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #5558d8; color: white; font: inherit; cursor: pointer; }
+</style>, 0] 
+    at BrowserToolsSidebar (components/cortex/BrowserToolsSidebar.tsx:102:12)
+    at Set.forEach (<anonymous>)
+  100 |   }, []);
+  101 |
+> 102 |   useEffect(() => {
+      |            ^
+  103 |     if (activeTab === 'preview' || activeTab === 'annotate') {
+  104 |       lastPreviewWindowRef.current = previewRef.current?.contentWindow ?? lastPreviewWindowRef.current;
+  105 |     } (components/cortex/BrowserToolsSidebar.tsx:102:12)
+16:19:16.867	GET / 200 in 125ms (next.js: 4ms, application-code: 121ms)
+16:21:06.982	✓ Compiled in 87ms
+16:21:12.892	✓ Compiled in 316ms
+16:21:31.074	GET / 200 in 99ms (next.js: 4ms, application-code: 95ms)
+16:23:39.851	✓ Compiled in 210ms
+16:23:59.938	GET / 200 in 96ms (next.js: 3ms, application-code: 93ms)
+16:25:09.083	✓ Compiled in 133ms
+16:25:15.498	✓ Compiled in 87ms
+16:25:31.232	✓ Compiled in 69ms
+16:26:12.760	GET / 200 in 88ms (next.js: 3ms, application-code: 86ms)
+16:27:38.946	GET / 200 in 89ms (next.js: 3ms, application-code: 86ms)

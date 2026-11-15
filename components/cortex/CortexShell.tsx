@@ -41,7 +41,7 @@ import type {
   WorkflowDef,
 } from '@/lib/types';
 import { CommandPalette } from './CommandPalette';
-import { InspectorPanel } from './InspectorPanel';
+import { BrowserToolsSidebar } from './BrowserToolsSidebar';
 import { HomeModule } from './modules/HomeModule';
 import { ChatModule } from './modules/ChatModule';
 import { AgentsModule } from './modules/AgentsModule';
@@ -79,6 +79,7 @@ export function CortexShell() {
 
   const [contextOpen, setContextOpen] = useState(true);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [browserToolsWidth, setBrowserToolsWidth] = useState(400);
   const [runLogOpen, setRunLogOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorTarget, setInspectorTarget] = useState<InspectorTarget>({
@@ -635,9 +636,12 @@ export function CortexShell() {
                 ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
+            aria-label="Toggle browser tools sidebar"
+            aria-pressed={inspectorOpen}
+            title="Toggle browser tools"
           >
             <PanelRight className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Inspector</span>
+            <span className="hidden sm:inline">Browser tools</span>
           </button>
           <button
             type="button"
@@ -870,10 +874,12 @@ export function CortexShell() {
 
         {/* 4. Collapsible Right Inspector */}
         {inspectorOpen && (
-          <div className="hidden xl:flex">
-            <InspectorPanel
+          <div className="fixed inset-y-12 right-0 z-30 h-[calc(100vh-3rem)] xl:relative xl:inset-y-auto xl:right-auto xl:z-auto xl:h-full">
+            <BrowserToolsSidebar
               state={state}
               target={inspectorTarget}
+              width={browserToolsWidth}
+              onWidthChange={setBrowserToolsWidth}
               onClose={() => setInspectorOpen(false)}
               onSelectTarget={setInspectorTarget}
               onNavigate={handleNavigate}

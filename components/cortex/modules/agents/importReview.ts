@@ -47,6 +47,11 @@ export interface IdConflictResult {
 }
 
 const SAFE_BASELINE = {
+  provider: 'gemini' as ProviderId,
+  memory: {
+    read: ['knowledge'] as MemoryScope[],
+    write: ['agent'] as MemoryScope[],
+  },
   permissions: {
     fs: 'read-only' as const,
     network: false,
@@ -79,12 +84,13 @@ const HIGH_RISK_TOOL_TOKENS = new Set<string>([
 ]);
 
 function isHighRiskTool(toolName: string): boolean {
-  const normalized = toolName.trim().toLowerCase();
+  const trimmed = toolName.trim();
   // Prototype policy choice: 'memory.write' only writes to the Brain and is governed by memory permissions.
-  if (normalized === 'memory.write') {
+  if (trimmed.toLowerCase() === 'memory.write') {
     return false;
   }
-  const tokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  const splitCamel = trimmed.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
+  const tokens = splitCamel.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   return tokens.some((token) => HIGH_RISK_TOOL_TOKENS.has(token));
 }
 
@@ -312,10 +318,11 @@ export function parseImport(text: string): ParseImportResult {
       if (parsed.delegation.maxDepth !== undefined) {
         if (
           typeof parsed.delegation.maxDepth !== 'number' ||
-          !Number.isFinite(parsed.delegation.maxDepth) ||
-          parsed.delegation.maxDepth < 0
+          !Number.isInteger(parsed.delegation.maxDepth) ||
+          parsed.delegation.maxDepth < 0 ||
+          parsed.delegation.maxDepth > 5
         ) {
-          errors.push('Field "delegation.maxDepth" must be a non-negative number.');
+          errors.push('Field "delegation.maxDepth" must be an integer between 0 and 5.');
         } else {
           maxDepth = parsed.delegation.maxDepth;
         }
@@ -534,6 +541,65 @@ export function diffPermissions(
       from: String(baseMaxConcurrent),
       to: String(imported.delegation.maxConcurrent),
       risk: imported.delegation.maxConcurrent > 4 ? 'medium' : 'low',
+    });
+  }
+
+  const baseAllowed = existingOrNull
+    ? existingOrNull.delegation.allowed
+    : SAFE_BASELINE.delegation.allowed;
+  const allowedChanged =
+    imported.delegation.allowed.length !== baseAllowed.length ||
+    imported.delegation.allowed.some((a, i) => a !== baseAllowed[i]);
+  if (allowedChanged) {
+    pushDiff({
+      field: 'delegation.allowed',
+      from: baseAllowed.join(', ') || '(none)',
+      to: imported.delegation.allowed.join(', ') || '(none)',
+      risk:
+        imported.delegation.canSpawn && imported.delegation.allowed.length > 0 ? 'medium' : 'low',
+    });
+  }
+
+  const baseMemWrite = existingOrNull ? existingOrNull.memory.write : SAFE_BASELINE.memory.write;
+  const memWriteChanged =
+    imported.memory.write.length !== baseMemWrite.length ||
+    imported.memory.write.some((m, i) => m !== baseMemWrite[i]);
+  if (memWriteChanged) {
+    const memWriteRisk: RiskLevel = imported.memory.write.includes('personal')
+      ? 'high'
+      : imported.memory.write.includes('project') || imported.memory.write.includes('knowledge')
+        ? 'medium'
+        : 'low';
+    pushDiff({
+      field: 'memory.write',
+      from: baseMemWrite.join(', ') || '(none)',
+      to: imported.memory.write.join(', ') || '(none)',
+      risk: memWriteRisk,
+    });
+  }
+
+  const baseMemRead = existingOrNull ? existingOrNull.memory.read : SAFE_BASELINE.memory.read;
+  const memReadChanged =
+    imported.memory.read.length !== baseMemRead.length ||
+    imported.memory.read.some((m, i) => m !== baseMemRead[i]);
+  if (memReadChanged) {
+    const addsPersonalRead =
+      imported.memory.read.includes('personal') && !baseMemRead.includes('personal');
+    pushDiff({
+      field: 'memory.read',
+      from: baseMemRead.join(', ') || '(none)',
+      to: imported.memory.read.join(', ') || '(none)',
+      risk: addsPersonalRead ? 'medium' : 'low',
+    });
+  }
+
+  const baseProvider = existingOrNull ? existingOrNull.provider : SAFE_BASELINE.provider;
+  if (imported.provider !== baseProvider) {
+    pushDiff({
+      field: 'provider',
+      from: baseProvider,
+      to: imported.provider,
+      risk: imported.provider !== 'ollama' ? 'medium' : 'low',
     });
   }
 

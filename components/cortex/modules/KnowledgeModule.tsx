@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Markdown from 'react-markdown';
 import {
   BookOpen,
@@ -63,6 +64,15 @@ const FOLDERS: BrainFolder[] = ['Memories', 'Ideas', 'Notes', 'Goals', 'Tasks', 
 const GRAPH_BASE_WIDTH = 760;
 const GRAPH_BASE_HEIGHT = 450;
 
+const Graph3D = dynamic(() => import('./knowledge/Graph3D').then((m) => m.Graph3D), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full min-h-[440px] flex items-center justify-center text-xs text-slate-500">
+      Loading 3D graph view...
+    </div>
+  ),
+});
+
 interface RecentIngestEntry {
   id: string;
   title: string;
@@ -104,6 +114,7 @@ export function KnowledgeModule({
 
   // Graph controls
   const [graphFilter, setGraphFilter] = useState<string>('ALL');
+  const [graphViewMode, setGraphViewMode] = useState<'2d' | '3d'>('2d');
   const [graphZoom, setGraphZoom] = useState(1);
   const [graphPan, setGraphPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -385,6 +396,16 @@ export function KnowledgeModule({
   }, [state.graphNodes, graphFilter]);
 
   const visibleNodeIds = useMemo(() => new Set(visibleNodes.map((n) => n.id)), [visibleNodes]);
+
+  const visibleEdges = useMemo(
+    () => state.graphEdges.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target)),
+    [state.graphEdges, visibleNodeIds]
+  );
+
+  const handleSelectGraphNode = (nodeId: string) => {
+    setActiveNodeId(nodeId);
+    onInspect({ kind: 'node', nodeId });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -749,29 +770,73 @@ export function KnowledgeModule({
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setGraphZoom((z) => Math.max(0.7, Math.round((z - 0.15) * 100) / 100))}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  aria-label="Zoom out graph"
+              <div className="flex items-center gap-2">
+                <div
+                  role="group"
+                  aria-label="Graph view mode"
+                  className="inline-flex items-center p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900"
                 >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <span className="text-xs font-mono tabular-nums px-2">{Math.round(graphZoom * 100)}%</span>
-                <button
-                  type="button"
-                  onClick={() => setGraphZoom((z) => Math.min(1.6, Math.round((z + 0.15) * 100) / 100))}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  aria-label="Zoom in graph"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
+                  <button
+                    type="button"
+                    aria-pressed={graphViewMode === '2d'}
+                    onClick={() => setGraphViewMode('2d')}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                      graphViewMode === '2d'
+                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    2D
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={graphViewMode === '3d'}
+                    onClick={() => setGraphViewMode('3d')}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                      graphViewMode === '3d'
+                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    3D
+                  </button>
+                </div>
+
+                {graphViewMode === '2d' && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setGraphZoom((z) => Math.max(0.7, Math.round((z - 0.15) * 100) / 100))}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      aria-label="Zoom out graph"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-mono tabular-nums px-2">{Math.round(graphZoom * 100)}%</span>
+                    <button
+                      type="button"
+                      onClick={() => setGraphZoom((z) => Math.min(1.6, Math.round((z + 0.15) * 100) / 100))}
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      aria-label="Zoom in graph"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex-1 min-h-[440px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden relative">
-              {(() => {
+              {graphViewMode === '3d' ? (
+                <Graph3D
+                  nodes={visibleNodes}
+                  edges={visibleEdges}
+                  activeNodeId={effectiveActiveNodeId}
+                  onSelectNode={handleSelectGraphNode}
+                  nodeColors={NODE_COLORS}
+                  onSwitchTo2D={() => setGraphViewMode('2d')}
+                />
+              ) : (() => {
                 const vbWidth = GRAPH_BASE_WIDTH / graphZoom;
                 const vbHeight = GRAPH_BASE_HEIGHT / graphZoom;
                 const vbX = (GRAPH_BASE_WIDTH - vbWidth) / 2 + graphPan.x;
@@ -840,50 +905,45 @@ export function KnowledgeModule({
                       </marker>
                     </defs>
 
-                    {state.graphEdges
-                      .filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
-                      .map((edge) => {
-                        const src = nodeById.get(edge.source);
-                        const tgt = nodeById.get(edge.target);
-                        if (!src || !tgt) return null;
-                        const highlighted =
-                          effectiveActiveNodeId !== null &&
-                          (effectiveActiveNodeId === src.id || effectiveActiveNodeId === tgt.id);
-                        const midX = (src.x + tgt.x) / 2;
-                        const midY = (src.y + tgt.y) / 2;
-                        return (
-                          <g key={edge.id}>
-                            <line
-                              x1={src.x}
-                              y1={src.y}
-                              x2={tgt.x}
-                              y2={tgt.y}
-                              stroke={highlighted ? '#6366f1' : '#475569'}
-                              strokeOpacity={highlighted ? 0.9 : 0.35}
-                              strokeWidth={highlighted ? 2 : 1.2}
-                              markerEnd="url(#arrow)"
-                            />
-                            {highlighted && (
-                              <text
-                                x={midX}
-                                y={midY - 4}
-                                textAnchor="middle"
-                                className="fill-slate-400 text-[9px] font-mono"
-                              >
-                                {edge.relation}
-                              </text>
-                            )}
-                          </g>
-                        );
-                      })}
+                    {visibleEdges.map((edge) => {
+                      const src = nodeById.get(edge.source);
+                      const tgt = nodeById.get(edge.target);
+                      if (!src || !tgt) return null;
+                      const highlighted =
+                        effectiveActiveNodeId !== null &&
+                        (effectiveActiveNodeId === src.id || effectiveActiveNodeId === tgt.id);
+                      const midX = (src.x + tgt.x) / 2;
+                      const midY = (src.y + tgt.y) / 2;
+                      return (
+                        <g key={edge.id}>
+                          <line
+                            x1={src.x}
+                            y1={src.y}
+                            x2={tgt.x}
+                            y2={tgt.y}
+                            stroke={highlighted ? '#6366f1' : '#475569'}
+                            strokeOpacity={highlighted ? 0.9 : 0.35}
+                            strokeWidth={highlighted ? 2 : 1.2}
+                            markerEnd="url(#arrow)"
+                          />
+                          {highlighted && (
+                            <text
+                              x={midX}
+                              y={midY - 4}
+                              textAnchor="middle"
+                              className="fill-slate-400 text-[9px] font-mono"
+                            >
+                              {edge.relation}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })}
 
                     {visibleNodes.map((node) => {
                       const isActive = effectiveActiveNodeId === node.id;
                       const color = NODE_COLORS[node.type] ?? '#6366f1';
-                      const selectNode = () => {
-                        setActiveNodeId(node.id);
-                        onInspect({ kind: 'node', nodeId: node.id });
-                      };
+                      const selectNode = () => handleSelectGraphNode(node.id);
                       return (
                         <g
                           key={node.id}
